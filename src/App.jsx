@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Note from "./Note";
 
 const App = () => {
-  const [persons, setPersons] = useState([{ name: 'Arto Hellas', number : '9054342312' }]);
+  const [persons, setPersons] = useState([{ name: 'Arto Hellas', number: '9054342312' }]);
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -12,12 +12,13 @@ const App = () => {
     event.preventDefault()
 
     const nameExists = persons.some(person => person.name === newName)
-    
-    if(nameExists){
-      window.alert('Name already exists in the phonebook')
+
+    if (nameExists) {
+      const existingPerson = persons.find(person => person.name === newName);
+      window.alert(`${existingPerson.name} already exists in the phonebook with number`);
     }
-    else{ 
-      const newPerson = { name: newName, number:newNumber }
+    else {
+      const newPerson = { name: newName, number: newNumber }
       setPersons([...persons, newPerson])
       setNewName('')
       setNewNumber('')
