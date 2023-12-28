@@ -1,12 +1,13 @@
 import React, { useState } from "react";
-import Note from "./Note";
+import Note from "./Note"
 
 const App = () => {
-  const [persons, setPersons] = useState([{ name: 'Arto Hellas', number: '9054342312' }]);
+  const [persons, setPersons] = useState([{ name: 'Sabhyaa', number: '9054342312' }]);
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [error, setError] = useState('')
+  
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -58,7 +59,7 @@ const App = () => {
           />
         </div>
         <div>
-          <button type="submit">add</button>
+          <button type="submit">Add</button>
         </div>
       </form>
       <h2>Numbers</h2>
@@ -71,4 +72,4 @@ const App = () => {
   )
 }
 
-export default App;
+export default App
