@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import noteService from './services/notes';
+import React, { useState, useEffect } from "react"
+import noteService from './services/notes'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -11,12 +11,24 @@ const App = () => {
   const addPerson = (event) => {
     event.preventDefault()
 
-    const nameExists = persons.some(person => person.name === newName);
+    const nameExists = persons.some(person => person.name === newName)
+    const newPerson = { name: newName, number: newNumber }
 
     if (nameExists) {
       const existingPerson = persons.find(person => person.name === newName);
-      window.alert(`${existingPerson.name} already exists in the phonebook with ${existingPerson.number}`);
-    
+      const confirmed = window.confirm(`${existingPerson.name} already exists in the phonebook with ${existingPerson.number}. Do you want to change the number to ${newNumber}`)
+
+      if (confirmed) {
+        noteService
+          .update(existingPerson.id, newPerson)
+          .then(response => {
+            setPersons(persons.map(person => person.id !== existingPerson.id ? person : response.data));
+          })
+          .catch(error => {
+            console.error('Error updating person:', error);
+          })
+      }
+
     } else {
       const newPerson = { name: newName, number: newNumber }
 
