@@ -7,6 +7,7 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
 
+
   const addPerson = (event) => {
     event.preventDefault()
 
@@ -15,10 +16,12 @@ const App = () => {
     if (nameExists) {
       const existingPerson = persons.find(person => person.name === newName);
       window.alert(`${existingPerson.name} already exists in the phonebook with ${existingPerson.number}`);
+    
     } else {
       const newPerson = { name: newName, number: newNumber }
 
-      noteService.create(newPerson)
+      noteService
+        .create(newPerson)
         .then(response => {
           setPersons([...persons, response.data])
           setNewName('')
@@ -34,27 +37,32 @@ const App = () => {
     const confirmed = window.confirm(`Delete ${name} from the phonebook?`);
     if (confirmed) {
       noteService
-      .deletePerson(id)
-      .then(() => {
-        setPersons(persons.filter(person => person.id !==id))
-      })
-      .catch(error => {
-        console.error('Error deleting person:', error);
-      })
+        .deletePerson(id)
+        .then(() => {
+          setPersons(persons.filter(person => person.id !== id))
+        })
+        .catch(error => {
+          console.error('Error deleting person:', error);
+        })
     }
   }
 
+  const filteredPersons = persons.filter(person =>
+    person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    person.number.includes(searchQuery)
+  )
+
   useEffect(() => {
     noteService
-    .getAll()
-    .then(response => {
-      setPersons(response.data)
-    })
+      .getAll()
+      .then(response => {
+        setPersons(response.data)
+      })
   }, [])
 
   return (
     <div>
-      <h2>Phonebook</h2>
+      <h1>Phonebook</h1>
       <div>
         Search: <input
           type="text"
@@ -84,9 +92,9 @@ const App = () => {
       </form>
       <h2>Numbers</h2>
       <ul>
-        {persons.map((person, index) => (
+        {filteredPersons.map((person, index) => (
           <li key={index}>{person.name}: {person.number}
-          <button onClick={() => deletePerson(person.id, person.name)}>Delete</button>
+            <button onClick={() => deletePerson(person.id, person.name)}>Delete</button>
           </li>
         ))}
       </ul>
