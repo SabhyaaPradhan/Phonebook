@@ -13,22 +13,36 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault();
-  
+
     const nameExists = persons.some(person => person.name === newName);
     const newPerson = { name: newName, number: newNumber };
-  
+
     if (!newName || !newNumber) {
       console.error('Error adding person:', { error: 'Name and number are required' });
+      alert('Name and number are required')
       return;
     }
-  
+
+    if (newName.length < 3) {
+      console.error('Error adding person:', { error: 'Name must be at least 3 characters long' });
+      alert('Name must be at least 3 characters long');
+      return;
+    }
+
+    const phoneRegex = /^\d{2,3}-\d{7,}$/;
+
+    if (!phoneRegex.test(newNumber)) {
+      console.error('Error adding person:', { error: 'Invalid phone number format' });
+      alert('Invalid phone number format. Please use the format like 09-1234556 or 040-22334455');
+      return;
+    }
+
     if (nameExists) {
       const existingPerson = persons.find(person => person.name === newName);
       const confirmed = window.confirm(`${existingPerson.name} already exists in the phonebook with ${existingPerson.number}. Do you want to change the number to ${newNumber}`);
-  
+
       if (confirmed) {
-        axios
-          .put(`http://localhost:3001/api/persons/${existingPerson.id}`, newPerson)
+        api.put(`/${existingPerson.id}`, newPerson)
           .then(response => {
             console.log('Person updated successfully:', response.data);
             setPersons(persons.map(person => person.id !== existingPerson.id ? person : response.data));
@@ -40,9 +54,7 @@ const App = () => {
           });
       }
     } else {
-      const newId = Math.max(...persons.map(person => person.id), 0) + 1;
-      axios
-        .post('http://localhost:3001/api/persons', { ...newPerson, id: newId })
+      api.post('/', newPerson)
         .then(response => {
           console.log('Person added successfully:', response.data);
           setPersons([...persons, response.data]);
@@ -53,7 +65,7 @@ const App = () => {
           console.error('Error adding person:', error.response ? error.response.data : error.message);
         });
     }
-  };  
+  };
 
   const deletePerson = (id, name) => {
     const confirmed = window.confirm(`Delete ${name} from the phonebook?`);
@@ -66,7 +78,7 @@ const App = () => {
           console.error('Error deleting person:', error);
         });
     }
-  };
+  }
 
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
