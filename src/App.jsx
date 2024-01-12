@@ -1,76 +1,87 @@
-import React, { useState, useEffect } from "react"
-import noteService from './services/notes'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3001/api/persons',
+});
 
 const App = () => {
-  const [persons, setPersons] = useState([])
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
-
+  const [persons, setPersons] = useState([]);
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const addPerson = (event) => {
-    event.preventDefault()
-
-    const nameExists = persons.some(person => person.name === newName)
-    const newPerson = { name: newName, number: newNumber }
-
+    event.preventDefault();
+  
+    const nameExists = persons.some(person => person.name === newName);
+    const newPerson = { name: newName, number: newNumber };
+  
+    if (!newName || !newNumber) {
+      console.error('Error adding person:', { error: 'Name and number are required' });
+      return;
+    }
+  
     if (nameExists) {
       const existingPerson = persons.find(person => person.name === newName);
-      const confirmed = window.confirm(`${existingPerson.name} already exists in the phonebook with ${existingPerson.number}. Do you want to change the number to ${newNumber}`)
-
+      const confirmed = window.confirm(`${existingPerson.name} already exists in the phonebook with ${existingPerson.number}. Do you want to change the number to ${newNumber}`);
+  
       if (confirmed) {
-        noteService
-          .update(existingPerson.id, newPerson)
+        axios
+          .put(`http://localhost:3001/api/persons/${existingPerson.id}`, newPerson)
           .then(response => {
+            console.log('Person updated successfully:', response.data);
             setPersons(persons.map(person => person.id !== existingPerson.id ? person : response.data));
+            setNewName('');
+            setNewNumber('');
           })
           .catch(error => {
-            console.error('Error updating person:', error);
-          })
+            console.error('Error updating person:', error.response ? error.response.data : error.message);
+          });
       }
-
     } else {
-      const newPerson = { name: newName, number: newNumber }
-
-      noteService
-        .create(newPerson)
+      const newId = Math.max(...persons.map(person => person.id), 0) + 1;
+      axios
+        .post('http://localhost:3001/api/persons', { ...newPerson, id: newId })
         .then(response => {
-          setPersons([...persons, response.data])
-          setNewName('')
-          setNewNumber('')
+          console.log('Person added successfully:', response.data);
+          setPersons([...persons, response.data]);
+          setNewName('');
+          setNewNumber('');
         })
         .catch(error => {
-          console.error('Error adding person:', error);
-        })
+          console.error('Error adding person:', error.response ? error.response.data : error.message);
+        });
     }
-  }
+  };  
 
   const deletePerson = (id, name) => {
     const confirmed = window.confirm(`Delete ${name} from the phonebook?`);
     if (confirmed) {
-      noteService
-        .deletePerson(id)
+      api.delete(`/${id}`)
         .then(() => {
           setPersons(persons.filter(person => person.id !== id))
         })
         .catch(error => {
           console.error('Error deleting person:', error);
-        })
+        });
     }
-  }
+  };
 
   const filteredPersons = persons.filter(person =>
     person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     person.number.includes(searchQuery)
-  )
+  );
 
   useEffect(() => {
-    noteService
-      .getAll()
+    api.get('/')
       .then(response => {
-        setPersons(response.data)
+        setPersons(response.data);
       })
-  }, [])
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
 
   return (
     <div>
@@ -111,7 +122,7 @@ const App = () => {
         ))}
       </ul>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
